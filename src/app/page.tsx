@@ -3,7 +3,7 @@
 import { motion, useScroll, useTransform } from "framer-motion"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
-import { FaGithub, FaLinkedin, FaTwitter } from "react-icons/fa"
+import { FaGithub, FaLinkedin, FaTwitter, FaBrain } from "react-icons/fa"
 import { 
   SiJavascript, 
   SiTypescript, 
@@ -16,7 +16,7 @@ import {
   SiOpenai
 } from "react-icons/si"
 import { TbBrandReact } from "react-icons/tb"
-import { BsGraphUp, BsLightningChargeFill, BsBrainHalf } from "react-icons/bs"
+import { BsGraphUp, BsLightningChargeFill } from "react-icons/bs"
 import dynamic from "next/dynamic"
 import { useRef } from "react"
 
@@ -48,7 +48,7 @@ const SKILLS = [
   { name: "TensorFlow", icon: SiTensorflow, color: "#FF6F00" },
   { name: "PyGeometric", icon: BsGraphUp, color: "#4B0082" },
   { name: "Diffusion", icon: BsLightningChargeFill, color: "#9333EA" },
-  { name: "GANs", icon: BsBrainHalf, color: "#10B981" },
+  { name: "GANs", icon: FaBrain, color: "#10B981" },
   { name: "LLMs", icon: SiOpenai, color: "#00A67E" },
   { name: "GNNs", icon: BsGraphUp, color: "#3B82F6" },
   { name: "MongoDB", icon: SiMongodb, color: "#47A248" },
@@ -64,23 +64,27 @@ const fadeIn = {
 
 function SkillCard({ skill, index }: { skill: typeof SKILLS[0], index: number }) {
   const ref = useRef(null)
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ["0 1", "1.2 1"]
-  })
-  const y = useTransform(scrollYProgress, [0, 1], [100, 0])
-  const opacity = useTransform(scrollYProgress, [0, 1], [0, 1])
-
+  
   return (
     <motion.div
       ref={ref}
-      style={{ y, opacity }}
+      initial={{ opacity: 0, y: 50 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ 
+        delay: index * 0.1, 
+        duration: 0.5,
+        ease: "easeOut"
+      }}
       className="group relative flex flex-col items-center p-6 bg-accent/5 backdrop-blur-sm rounded-xl hover:bg-accent/10 transition-colors"
     >
       <motion.div
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
-        transition={{ delay: index * 0.1, type: "spring", stiffness: 100 }}
+        transition={{ 
+          delay: index * 0.1 + 0.2, 
+          type: "spring", 
+          stiffness: 100 
+        }}
         className="relative w-16 h-16 mb-4"
       >
         <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-purple-600/20 rounded-full blur-xl group-hover:blur-2xl transition-all" />

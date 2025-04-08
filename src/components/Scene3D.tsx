@@ -2,7 +2,7 @@
 
 import { useRef, Suspense } from "react"
 import { Canvas, useFrame } from "@react-three/fiber"
-import { OrbitControls, PerspectiveCamera, Float } from "@react-three/drei"
+import { OrbitControls, PerspectiveCamera } from "@react-three/drei"
 import * as THREE from "three"
 
 function FloatingRings() {
@@ -25,8 +25,6 @@ function FloatingRings() {
             roughness={0.2}
             opacity={0.8 - i * 0.1}
             transparent
-            emissive="#6d28d9"
-            emissiveIntensity={0.5}
           />
         </mesh>
       ))}
@@ -36,16 +34,14 @@ function FloatingRings() {
 
 function ParticleField() {
   const points = useRef<THREE.Points>(null)
-  const particlesGeometry = new THREE.BufferGeometry()
-  const particleCount = 500
-
-  const positions = new Float32Array(particleCount * 3)
-  for (let i = 0; i < particleCount * 3; i += 3) {
-    positions[i] = (Math.random() - 0.5) * 20
-    positions[i + 1] = (Math.random() - 0.5) * 20
-    positions[i + 2] = (Math.random() - 0.5) * 20
+  const particlesCount = 500
+  const positionArray = new Float32Array(particlesCount * 3)
+  
+  for (let i = 0; i < particlesCount * 3; i += 3) {
+    positionArray[i] = (Math.random() - 0.5) * 20
+    positionArray[i + 1] = (Math.random() - 0.5) * 20
+    positionArray[i + 2] = (Math.random() - 0.5) * 20
   }
-  particlesGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3))
 
   useFrame((state) => {
     if (!points.current) return
@@ -55,7 +51,14 @@ function ParticleField() {
 
   return (
     <points ref={points}>
-      <bufferGeometry {...particlesGeometry} />
+      <bufferGeometry>
+        <bufferAttribute
+          attach="attributes-position"
+          count={particlesCount}
+          array={positionArray}
+          itemSize={3}
+        />
+      </bufferGeometry>
       <pointsMaterial
         size={0.05}
         color="#6d28d9"
@@ -81,14 +84,7 @@ function Scene() {
       <directionalLight position={[10, 10, 5]} intensity={0.5} />
       <pointLight position={[-10, -10, -5]} intensity={0.2} color="#4338ca" />
       
-      <Float
-        speed={4}
-        rotationIntensity={1}
-        floatIntensity={2}
-      >
-        <FloatingRings />
-      </Float>
-      
+      <FloatingRings />
       <ParticleField />
       
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -4, 0]}>
@@ -97,7 +93,6 @@ function Scene() {
           color="#020617"
           metalness={0.8}
           roughness={0.5}
-          envMapIntensity={0.2}
         />
       </mesh>
     </>
@@ -108,7 +103,7 @@ export default function Scene3D() {
   return (
     <div className="absolute inset-0 -z-10">
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/50 to-background" />
-      <Canvas dpr={[1, 2]} style={{ background: 'transparent' }}>
+      <Canvas dpr={[1, 1.5]} style={{ background: 'transparent' }}>
         <Suspense fallback={null}>
           <Scene />
         </Suspense>

@@ -3,7 +3,6 @@
 import { motion } from "framer-motion"
 import { cn } from "@/lib/utils"
 import {
-  SiNextdotjs,
   SiReact,
   SiTypescript,
   SiNodedotjs,
@@ -13,14 +12,15 @@ import {
   SiPostgresql,
   SiDocker,
   SiGit,
-  SiAmazonaws,
   SiFirebase,
 } from "react-icons/si"
+import { FaAws } from "react-icons/fa"
+import { TbBrandNextjs } from "react-icons/tb"
 
 const SKILLS = [
   {
     name: "Next.js",
-    icon: SiNextdotjs,
+    icon: TbBrandNextjs,
     description: "Full-stack React framework for production",
     level: "Advanced",
   },
@@ -80,7 +80,7 @@ const SKILLS = [
   },
   {
     name: "AWS",
-    icon: SiAmazonaws,
+    icon: FaAws,
     description: "Cloud computing platform",
     level: "Intermediate",
   },
