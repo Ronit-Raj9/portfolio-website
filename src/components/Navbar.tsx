@@ -4,66 +4,76 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useTheme } from 'next-themes'
 import { RiMoonFill, RiSunLine } from 'react-icons/ri'
-import { IoMdMenu, IoMdClose } from 'react-icons/io'
+import { FaGithub, FaLinkedin, FaTwitter } from 'react-icons/fa'
+import { SiKaggle } from 'react-icons/si'
 import { cn } from '@/lib/utils'
 
-const NAV_ITEMS = [
+const SOCIAL_LINKS = [
   {
-    label: "Home",
-    page: "/"
+    name: "GitHub",
+    url: "https://github.com/Ronit-Raj9",
+    icon: FaGithub,
   },
   {
-    label: "Projects",
-    page: "/projects"
+    name: "LinkedIn",
+    url: "https://www.linkedin.com/in/ronit-raj-662485225/",
+    icon: FaLinkedin,
   },
   {
-    label: "Skills",
-    page: "/skills"
+    name: "Twitter",
+    url: "https://x.com/ronit__raj",
+    icon: FaTwitter,
   },
   {
-    label: "Contact",
-    page: "/contact"
-  }
+    name: "Kaggle",
+    url: "https://www.kaggle.com/ronitraj1",
+    icon: SiKaggle,
+  },
 ]
 
 export default function Navbar() {
   const { systemTheme, theme, setTheme } = useTheme()
   const currentTheme = theme === 'system' ? systemTheme : theme
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-14 items-center">
-        <div className="mr-4 flex">
-          <Link href="/" className="mr-6 flex items-center space-x-2">
-            <span className="font-bold text-xl">Portfolio</span>
+    <header className="fixed top-0 left-0 right-0 z-50 w-full bg-transparent">
+      <div className="container mx-auto flex h-16 items-center justify-between px-4">
+        {/* Logo */}
+        <div className="flex items-center">
+          <Link href="/" className="flex items-center space-x-2">
+            <span className="font-bold text-2xl flex items-center justify-center">
+              <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-600">RR</span>
+            </span>
           </Link>
         </div>
 
-        {/* Desktop Navigation */}
-        <div className="flex-1 hidden md:flex">
-          <nav className="flex items-center space-x-6 text-sm font-medium">
-            {NAV_ITEMS.map((item) => (
-              <Link
-                key={item.page}
-                href={item.page}
+        {/* Right side - Social links and theme toggle */}
+        <div className="flex items-center space-x-4">
+          {/* Social Links */}
+          <div className="flex items-center space-x-3">
+            {SOCIAL_LINKS.map((link) => (
+              <a
+                key={link.name}
+                href={link.url}
+                target="_blank"
+                rel="noopener noreferrer"
                 className={cn(
-                  "transition-colors hover:text-foreground/80",
-                  "text-foreground/60"
+                  "text-foreground/60 hover:text-foreground transition-colors hover:scale-110 transform duration-200",
+                  link.name === "Kaggle" && "text-blue-400/70 hover:text-blue-400"
                 )}
+                aria-label={link.name}
               >
-                {item.label}
-              </Link>
+                <link.icon className="h-5 w-5" />
+              </a>
             ))}
-          </nav>
-        </div>
+          </div>
 
-        <div className="flex flex-1 items-center justify-end space-x-4">
+          {/* Theme Toggle */}
           <button
             onClick={() => setTheme(currentTheme === "dark" ? "light" : "dark")}
             className={cn(
               "w-9 h-9 rounded-lg flex items-center justify-center",
-              "hover:bg-accent hover:text-accent-foreground",
+              "hover:bg-accent/10 hover:text-accent-foreground",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             )}
           >
@@ -74,42 +84,8 @@ export default function Navbar() {
             )}
             <span className="sr-only">Toggle theme</span>
           </button>
-
-          {/* Mobile Menu Button */}
-          <button
-            className="md:hidden"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-          >
-            {isMenuOpen ? (
-              <IoMdClose className="h-6 w-6" />
-            ) : (
-              <IoMdMenu className="h-6 w-6" />
-            )}
-            <span className="sr-only">Toggle menu</span>
-          </button>
         </div>
       </div>
-
-      {/* Mobile Navigation */}
-      {isMenuOpen && (
-        <div className="md:hidden">
-          <nav className="m-4 flex flex-col space-y-4">
-            {NAV_ITEMS.map((item) => (
-              <Link
-                key={item.page}
-                href={item.page}
-                className={cn(
-                  "transition-colors hover:text-foreground/80",
-                  "text-foreground/60"
-                )}
-                onClick={() => setIsMenuOpen(false)}
-              >
-                {item.label}
-              </Link>
-            ))}
-          </nav>
-        </div>
-      )}
     </header>
   )
 } 

@@ -1,151 +1,242 @@
 "use client"
 
-import { motion } from "framer-motion"
-import { cn } from "@/lib/utils"
-import {
-  SiReact,
-  SiTypescript,
-  SiNodedotjs,
-  SiPython,
-  SiTailwindcss,
-  SiMongodb,
-  SiPostgresql,
-  SiDocker,
-  SiGit,
-  SiFirebase,
-} from "react-icons/si"
-import { FaAws } from "react-icons/fa"
-import { TbBrandNextjs } from "react-icons/tb"
-
-const SKILLS = [
-  {
-    name: "Next.js",
-    icon: TbBrandNextjs,
-    description: "Full-stack React framework for production",
-    level: "Advanced",
-  },
-  {
-    name: "React",
-    icon: SiReact,
-    description: "Library for building user interfaces",
-    level: "Advanced",
-  },
-  {
-    name: "TypeScript",
-    icon: SiTypescript,
-    description: "JavaScript with syntax for types",
-    level: "Advanced",
-  },
-  {
-    name: "Node.js",
-    icon: SiNodedotjs,
-    description: "JavaScript runtime built on Chrome's V8",
-    level: "Advanced",
-  },
-  {
-    name: "Python",
-    icon: SiPython,
-    description: "General-purpose programming language",
-    level: "Intermediate",
-  },
-  {
-    name: "Tailwind CSS",
-    icon: SiTailwindcss,
-    description: "Utility-first CSS framework",
-    level: "Advanced",
-  },
-  {
-    name: "MongoDB",
-    icon: SiMongodb,
-    description: "NoSQL database program",
-    level: "Intermediate",
-  },
-  {
-    name: "PostgreSQL",
-    icon: SiPostgresql,
-    description: "Open source relational database",
-    level: "Intermediate",
-  },
-  {
-    name: "Docker",
-    icon: SiDocker,
-    description: "Platform for developing, shipping, and running applications",
-    level: "Intermediate",
-  },
-  {
-    name: "Git",
-    icon: SiGit,
-    description: "Distributed version control system",
-    level: "Advanced",
-  },
-  {
-    name: "AWS",
-    icon: FaAws,
-    description: "Cloud computing platform",
-    level: "Intermediate",
-  },
-  {
-    name: "Firebase",
-    icon: SiFirebase,
-    description: "Platform for building web and mobile applications",
-    level: "Intermediate",
-  },
-]
+import React from "react";
+import { motion } from "framer-motion";
+import { SiTensorflow, SiPytorch, SiScikitlearn, SiNextdotjs, SiReact, 
+  SiTypescript, SiNodedotjs, SiPython, SiTailwindcss, SiMongodb, 
+  SiPostgresql, SiDocker, SiGit, SiAmazonaws, SiFirebase, SiKeras, 
+  SiPandas, SiNumpy, SiJavascript, SiExpress, SiFastapi, SiDjango, 
+  SiMysql, SiRedis, SiKubernetes } from "react-icons/si";
+import { TbBrandOpenai } from "react-icons/tb";
 
 export default function Skills() {
+  const skillCategories = [
+    {
+      name: "AI & Machine Learning",
+      skills: [
+        {
+          name: "TensorFlow",
+          icon: <SiTensorflow className="text-orange-500" />,
+          description: "Deep learning framework for building and training neural networks",
+          proficiency: "Advanced",
+        },
+        {
+          name: "PyTorch",
+          icon: <SiPytorch className="text-red-500" />,
+          description: "Deep learning library with strong GPU acceleration support",
+          proficiency: "Advanced",
+        },
+        {
+          name: "Scikit-Learn",
+          icon: <SiScikitlearn className="text-blue-500" />,
+          description: "Machine learning library for classical ML algorithms",
+          proficiency: "Advanced",
+        },
+        {
+          name: "Keras",
+          icon: <SiKeras className="text-red-600" />,
+          description: "High-level neural networks API that runs on top of TensorFlow",
+          proficiency: "Advanced",
+        },
+        {
+          name: "OpenAI",
+          icon: <TbBrandOpenai className="text-green-500" />,
+          description: "Building applications with GPT and other AI models",
+          proficiency: "Advanced",
+        },
+        {
+          name: "Pandas & NumPy",
+          icon: <div className="flex gap-1"><SiPandas className="text-blue-400" /><SiNumpy className="text-blue-600" /></div>,
+          description: "Data manipulation and numerical computing libraries",
+          proficiency: "Advanced",
+        },
+      ]
+    },
+    {
+      name: "Backend Development",
+      skills: [
+        {
+          name: "Node.js",
+          icon: <SiNodedotjs className="text-green-500" />,
+          description: "JavaScript runtime for building scalable server-side applications",
+          proficiency: "Advanced",
+        },
+        {
+          name: "Python",
+          icon: <SiPython className="text-yellow-500" />,
+          description: "Versatile language for backend, data processing, and ML",
+          proficiency: "Advanced",
+        },
+        {
+          name: "Express.js",
+          icon: <SiExpress className="text-gray-600" />,
+          description: "Minimal and flexible Node.js web application framework",
+          proficiency: "Advanced",
+        },
+        {
+          name: "FastAPI",
+          icon: <SiFastapi className="text-teal-500" />,
+          description: "High-performance web framework for building APIs with Python",
+          proficiency: "Intermediate",
+        },
+        {
+          name: "Django",
+          icon: <SiDjango className="text-green-700" />,
+          description: "High-level Python web framework for rapid development",
+          proficiency: "Intermediate",
+        },
+        {
+          name: "TypeScript",
+          icon: <SiTypescript className="text-blue-500" />,
+          description: "Typed superset of JavaScript for large-scale applications",
+          proficiency: "Advanced",
+        },
+      ]
+    },
+    {
+      name: "Databases & Infrastructure",
+      skills: [
+        {
+          name: "MongoDB",
+          icon: <SiMongodb className="text-green-600" />,
+          description: "NoSQL database for modern applications",
+          proficiency: "Advanced",
+        },
+        {
+          name: "PostgreSQL",
+          icon: <SiPostgresql className="text-blue-600" />,
+          description: "Advanced open-source relational database",
+          proficiency: "Advanced",
+        },
+        {
+          name: "MySQL",
+          icon: <SiMysql className="text-blue-500" />,
+          description: "Popular open-source relational database management system",
+          proficiency: "Intermediate",
+        },
+        {
+          name: "Redis",
+          icon: <SiRedis className="text-red-500" />,
+          description: "In-memory data structure store used as database and cache",
+          proficiency: "Intermediate",
+        },
+        {
+          name: "Docker",
+          icon: <SiDocker className="text-blue-500" />,
+          description: "Platform for developing, shipping, and running applications in containers",
+          proficiency: "Advanced",
+        },
+        {
+          name: "AWS",
+          icon: <SiAmazonaws className="text-yellow-500" />,
+          description: "Comprehensive cloud computing platform",
+          proficiency: "Advanced",
+        },
+      ]
+    },
+  ];
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.2,
+      },
+    },
+  };
+
+  const categoryVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.5,
+        staggerChildren: 0.1,
+      },
+    },
+  };
+
+  const skillVariants = {
+    hidden: { opacity: 0, x: -20 },
+    visible: {
+      opacity: 1,
+      x: 0,
+      transition: { duration: 0.3 },
+    },
+    hover: {
+      scale: 1.05,
+      boxShadow: "0px 5px 15px rgba(0,0,0,0.1)",
+      transition: { duration: 0.2 },
+    },
+  };
+
   return (
-    <div className="container py-12 px-4">
+    <main className="container mx-auto px-4 py-16 max-w-6xl">
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="space-y-4 text-center mb-12"
+        className="text-center mb-16"
       >
-        <h1 className="text-3xl font-bold sm:text-4xl md:text-5xl">
-          My Skills
-        </h1>
-        <p className="text-muted-foreground max-w-[42rem] mx-auto">
-          Here are the technologies I work with. I'm constantly learning and expanding my skillset.
+        <h1 className="text-4xl font-bold mb-4">My Technical Skills</h1>
+        <p className="text-xl max-w-3xl mx-auto text-gray-600 dark:text-gray-300">
+          As a developer passionate about AI and backend solutions, I continuously expand my
+          expertise across these key technology areas.
         </p>
       </motion.div>
 
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {SKILLS.map((skill, index) => (
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="space-y-16"
+      >
+        {skillCategories.map((category, idx) => (
           <motion.div
-            key={skill.name}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: index * 0.1 }}
+            key={idx}
+            variants={categoryVariants}
+            className="mb-12"
           >
-            <div className={cn(
-              "group relative rounded-lg border p-6 shadow-md",
-              "hover:shadow-lg transition-all duration-200",
-              "bg-background"
-            )}>
-              <div className="flex items-center gap-4">
-                <div className="p-2 rounded-lg bg-primary/10">
-                  <skill.icon className="w-8 h-8 text-primary" />
-                </div>
-                <div>
-                  <h3 className="font-semibold">{skill.name}</h3>
-                  <p className="text-sm text-muted-foreground">{skill.description}</p>
-                </div>
-              </div>
-              <div className="mt-4">
-                <div className="h-2 w-full bg-secondary rounded-full overflow-hidden">
-                  <div 
-                    className={cn(
-                      "h-full bg-primary transition-all duration-500",
-                      skill.level === "Advanced" ? "w-full" : "w-2/3"
-                    )}
-                  />
-                </div>
-                <p className="text-xs text-muted-foreground mt-2">{skill.level}</p>
-              </div>
+            <motion.h2
+              initial={{ opacity: 0, x: -30 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: idx * 0.2 }}
+              className="text-2xl font-bold mb-8 pb-2 border-b-2 border-gray-200 dark:border-gray-700"
+            >
+              {category.name}
+            </motion.h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {category.skills.map((skill, skillIdx) => (
+                <motion.div
+                  key={skillIdx}
+                  variants={skillVariants}
+                  whileHover="hover"
+                  className="p-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700"
+                >
+                  <div className="flex items-center mb-4">
+                    <div className="text-3xl mr-3">{skill.icon}</div>
+                    <h3 className="text-xl font-semibold">{skill.name}</h3>
+                  </div>
+                  <p className="text-gray-600 dark:text-gray-300 mb-3">{skill.description}</p>
+                  <div className="flex items-center">
+                    <div
+                      className={`text-sm px-3 py-1 rounded-full ${
+                        skill.proficiency === "Advanced"
+                          ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                          : "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+                      }`}
+                    >
+                      {skill.proficiency}
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
             </div>
           </motion.div>
         ))}
-      </div>
-    </div>
-  )
+      </motion.div>
+    </main>
+  );
 } 

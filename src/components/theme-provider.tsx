@@ -2,21 +2,31 @@
 
 import * as React from "react"
 import { ThemeProvider as NextThemesProvider } from "next-themes"
-
-type Attribute = 'class' | 'data-theme' | 'data-color-scheme';
-
-interface ThemeProviderProps {
-  children: React.ReactNode;
-  attribute?: Attribute | Attribute[];
-  defaultTheme?: string;
-  enableSystem?: boolean;
-  disableTransitionOnChange?: boolean;
-  storageKey?: string;
-  themes?: string[];
-  forcedTheme?: string;
-  enableColorScheme?: boolean;
-}
+import { type ThemeProviderProps } from "next-themes/dist/types"
 
 export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
-  return <NextThemesProvider {...props}>{children}</NextThemesProvider>
+  const [mounted, setMounted] = React.useState(false)
+
+  // useEffect only runs on the client, so now we can safely show the UI
+  React.useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) {
+    // Render a placeholder or simplified version of your app while waiting for theme
+    return <div className="min-h-screen bg-background">{children}</div>
+  }
+
+  return (
+    <NextThemesProvider
+      {...props}
+      enableSystem
+      attribute="class"
+      defaultTheme="system"
+      enableColorScheme
+      disableTransitionOnChange={false}
+    >
+      {children}
+    </NextThemesProvider>
+  )
 } 

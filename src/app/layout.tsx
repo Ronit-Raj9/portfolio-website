@@ -8,8 +8,11 @@ import Footer from '@/components/Footer'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Portfolio - Mathematics & Scientific Computing Student',
-  description: 'Personal portfolio showcasing projects, skills, and achievements in mathematics and scientific computing',
+  title: 'Ronit Raj - AI/ML Developer & Open Source Enthusiast',
+  description: 'Personal portfolio of Ronit Raj, AI/ML Developer and Open Source Contributor specializing in machine learning, scientific computing, and web development.',
+  keywords: ['portfolio', 'developer', 'machine learning', 'AI', 'web development', 'scientific computing', 'Ronit Raj'],
+  authors: [{ name: 'Ronit Raj' }],
+  creator: 'Ronit Raj',
 }
 
 export default function RootLayout({
@@ -18,12 +21,12 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning className="scroll-smooth">
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <div className="min-h-screen bg-background">
+          <div className="min-h-screen bg-background flex flex-col">
             <Navbar />
-            <main className="container mx-auto px-4 py-8">
+            <main className="flex-1">
               {children}
             </main>
             <Footer />
