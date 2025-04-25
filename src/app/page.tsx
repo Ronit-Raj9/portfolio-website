@@ -1,9 +1,9 @@
 "use client"
 
-import { useRef, useState, useEffect } from "react"
+import { useRef, useState, useEffect, useCallback } from "react"
 import { motion, useScroll, useTransform } from "framer-motion"
 import Link from "next/link"
-import { cn, getCalendarMonths, getContributionLevelClass, formatGitHubCalendarData } from "@/lib/utils"
+import { cn } from "@/lib/utils"
 import { FaGithub, FaLinkedin, FaTwitter, FaBrain, FaCode, FaDatabase, FaLaptopCode, FaServer, FaGraduationCap, FaRobot } from "react-icons/fa"
 import { 
   SiJavascript, 
@@ -29,6 +29,20 @@ import { TbBrandReact } from "react-icons/tb"
 import { BsGraphUp, BsLightningChargeFill, BsArrowRight } from "react-icons/bs"
 import dynamic from "next/dynamic"
 import Image from "next/image"
+import { Card, CardContent } from '@/components/ui/card';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import { formatDistanceToNow, format } from 'date-fns';
+import { 
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger 
+} from '@/components/ui/tooltip';
+
+// Simple component to avoid import errors
+const GitHubCalendar = ({ data }: any) => <div>{/* Placeholder */}</div>
 
 const Scene3D = dynamic(() => import("@/components/Scene3D"), { ssr: false })
 
@@ -332,7 +346,7 @@ function ProjectCard({ project, index }: { project: typeof PROJECTS[0], index: n
             rel="noopener noreferrer"
             whileHover={{ scale: 1.03, y: -2 }}
             whileTap={{ scale: 0.98 }}
-            className="flex items-center gap-2 py-2.5 px-5 rounded-lg font-medium 
+            className="flex items-center gap-2 py-2.5 px-5 rounded-lg text-black font-medium 
               bg-primary text-white hover:bg-primary/90 shadow-md hover:shadow-lg shadow-primary/5 
               hover:shadow-primary/10 transition-all duration-300"
           >
@@ -432,8 +446,8 @@ function ExperienceCard({ experience, index }: { experience: typeof EXPERIENCE[0
   )
 }
 
-// Define GitHub data type
-type GitHubData = {
+// Return type for the GitHub data
+interface GitHubData {
   profile: {
     name: string;
     avatarUrl: string;
@@ -443,20 +457,23 @@ type GitHubData = {
     totalStars: number;
     url: string;
     bio: string;
+    createdAt: string;
   };
+  availableYears: number[];
+  selectedYear: number;
   repos: number;
-  topRepositories: Array<{
+  topRepositories: {
     name: string;
     stars: number;
     forks: number;
     url: string;
     description: string;
     language: string;
-  }>;
-  languages: Array<{
+  }[];
+  languages: {
     name: string;
     percentage: number;
-  }>;
+  }[];
   contributions: {
     total: number;
     code: number;
@@ -465,83 +482,82 @@ type GitHubData = {
   };
   contributionCalendar: {
     totalContributions: number;
-    days: Array<{
-      count: number;
-      date: string;
-      weekday: number;
-    }>;
-    weeks: Array<{
+    weeks: {
       firstDay: string;
-      days: Array<{
+      days: {
         count: number;
         date: string;
         weekday: number;
-      }>;
-    }>;
+      }[];
+    }[];
   };
   contributionsByMonth: Record<string, number>;
-  repositoryCommits: Array<{
+  repositoryCommits: {
     name: string;
     commitCount: number;
-  }>;
+  }[];
   lastUpdated: string;
 }
 
-function formatNumber(num: number): string {
-  if (num >= 1000) {
-    return (num / 1000).toFixed(1) + 'k';
+// Function to get GitHub data with year filtering
+async function getGitHubData(year?: number): Promise<GitHubData> {
+  const params = year ? `?year=${year}` : '';
+  const response = await fetch(`/api/github${params}`, { cache: 'no-store' });
+  
+  if (!response.ok) {
+    throw new Error('Failed to fetch GitHub data');
   }
-  return num.toString();
+  
+  return response.json();
 }
 
-function getLanguageColor(language: string) {
-  const colorMap: Record<string, string> = {
-    TypeScript: "from-blue-500 to-blue-600",
-    JavaScript: "from-yellow-300 to-yellow-400",
-    Python: "from-yellow-500 to-yellow-600",
-    "C++": "from-purple-500 to-purple-600",
-    Java: "from-orange-500 to-orange-600",
-    HTML: "from-red-500 to-red-600",
-    CSS: "from-blue-400 to-blue-500",
-    PHP: "from-indigo-500 to-indigo-600",
-    Go: "from-cyan-500 to-cyan-600",
-    Ruby: "from-red-600 to-red-700",
-    Rust: "from-orange-600 to-orange-700",
-    Others: "from-gray-500 to-gray-600"
-  };
-  
-  return colorMap[language] || "from-gray-500 to-gray-600";
+// Utility function to get color level based on contribution count
+function getColorLevel(count: number): string {
+  if (count === 0) return 'bg-slate-100 dark:bg-slate-800';
+  if (count < 5) return 'bg-green-100 dark:bg-green-900';
+  if (count < 10) return 'bg-green-300 dark:bg-green-700';
+  if (count < 20) return 'bg-green-500 dark:bg-green-500';
+  return 'bg-green-700 dark:bg-green-300';
 }
 
 function GitHubSection() {
   const [githubData, setGithubData] = useState<GitHubData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [selectedYear, setSelectedYear] = useState<number | null>(null);
+  const [hoverInfo, setHoverInfo] = useState<{count: number, date: string} | null>(null);
 
   useEffect(() => {
-    async function fetchGitHubData() {
+    async function fetchData() {
+      setLoading(true);
       try {
-        setIsLoading(true);
-        const response = await fetch('/api/github');
-        
-        if (!response.ok) {
-          throw new Error('Failed to fetch GitHub data');
-        }
-        
-        const data = await response.json();
-        console.log('GitHub data:', data);
+        const data = await getGitHubData(selectedYear || undefined);
         setGithubData(data);
-        setError(null);
-      } catch (err) {
-        console.error('Error fetching GitHub data:', err);
-        setError('Could not load GitHub data');
+        // Initialize with the current year if not already set
+        if (!selectedYear) {
+          setSelectedYear(data.selectedYear);
+        }
+      } catch (error) {
+        console.error('Error fetching GitHub data:', error);
       } finally {
-        setIsLoading(false);
+        setLoading(false);
       }
     }
-    
-    fetchGitHubData();
-  }, []);
+
+    fetchData();
+  }, [selectedYear]);
+
+  // Select a different year
+  const handleYearSelect = (year: number) => {
+    setSelectedYear(year);
+  };
+
+  if (loading || !githubData) {
+    return (
+      <div className="container mx-auto p-4">
+        <Skeleton className="h-64 w-full rounded-lg" />
+      </div>
+    );
+  }
 
   return (
     <section id="github" className="w-full py-20 bg-background relative overflow-hidden">
@@ -586,314 +602,169 @@ function GitHubSection() {
             </motion.h2>
           </div>
 
-          {isLoading ? (
-            <div className="flex flex-col items-center justify-center py-20">
-              <div className="w-16 h-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin mb-4"></div>
-              <p className="text-muted-foreground">Fetching live GitHub data...</p>
-            </div>
-          ) : error ? (
-            <div className="text-center py-8 mb-8 bg-red-500/10 rounded-xl border border-red-500/20 px-4">
-              <p className="text-red-500 font-medium mb-2">{error}</p>
-              <p className="text-muted-foreground">Showing cached data instead</p>
-            </div>
-          ) : (
-            <>
-              {/* GitHub Stats - Real data */}
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.3, duration: 0.6 }}
-                className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12"
-              >
-                <div className="bg-accent/5 backdrop-blur-sm rounded-xl p-6 border border-accent/10 hover:border-primary/20 transition-all duration-300 shadow-sm hover:shadow-md">
-                  <h3 className="text-lg font-medium mb-2 text-muted-foreground">Total Contributions</h3>
-                  <p className="text-4xl font-bold text-primary">
-                    {githubData ? formatNumber(githubData.contributions.total) : '0'}
+          {/* Profile Card */}
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
+                <Avatar className="h-20 w-20">
+                  <AvatarImage src={githubData.profile.avatarUrl} alt={githubData.profile.name} />
+                  <AvatarFallback>{githubData.profile.name.substring(0, 2)}</AvatarFallback>
+                </Avatar>
+                <div className="flex-1">
+                  <h2 className="text-2xl font-bold">{githubData.profile.name}</h2>
+                  <p className="text-muted-foreground">{githubData.profile.bio}</p>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    <Badge variant="secondary">{githubData.profile.followers} followers</Badge>
+                    <Badge variant="secondary">{githubData.profile.following} following</Badge>
+                    <Badge variant="secondary">{githubData.profile.publicRepos} repositories</Badge>
+                    <Badge variant="secondary">{githubData.profile.totalStars} stars</Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Joined {formatDistanceToNow(new Date(githubData.profile.createdAt), { addSuffix: true })}
                   </p>
-                  <div className="mt-4 h-1 w-full bg-primary/10 rounded-full overflow-hidden">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      whileInView={{ width: "85%" }}
-                      viewport={{ once: true }}
-                      transition={{ delay: 0.5, duration: 1 }}
-                      className="h-full bg-gradient-to-r from-primary to-purple-600 rounded-full"
-                    />
+                </div>
+                <a 
+                  href={githubData.profile.url} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="bg-black text-white dark:bg-white dark:text-black px-4 py-2 rounded-md text-sm font-medium flex items-center gap-2 hover:opacity-90 transition-opacity"
+                >
+                  <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+                    <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2z" />
+                  </svg>
+                  View on GitHub
+                </a>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Contribution Calendar Card */}
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex flex-col gap-4">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                  <h3 className="text-xl font-semibold">GitHub Contributions</h3>
+                  
+                  {/* Year selection buttons */}
+                  <div className="flex flex-wrap gap-2">
+                    {githubData.availableYears.map(year => (
+                      <button
+                        key={year}
+                        onClick={() => handleYearSelect(year)}
+                        className={`px-3 py-1 text-sm rounded-md ${
+                          year === selectedYear
+                            ? 'bg-primary text-primary-foreground'
+                            : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+                        }`}
+                      >
+                        {year}
+                      </button>
+                    ))}
                   </div>
                 </div>
                 
-                <div className="bg-accent/5 backdrop-blur-sm rounded-xl p-6 border border-accent/10 hover:border-primary/20 transition-all duration-300 shadow-sm hover:shadow-md">
-                  <h3 className="text-lg font-medium mb-2 text-muted-foreground">Repositories</h3>
-                  <p className="text-4xl font-bold text-primary">
-                    {githubData ? githubData.repos : '0'}
-                  </p>
-                  <div className="mt-4 h-1 w-full bg-primary/10 rounded-full overflow-hidden">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      whileInView={{ width: "70%" }}
-                      viewport={{ once: true }}
-                      transition={{ delay: 0.6, duration: 1 }}
-                      className="h-full bg-gradient-to-r from-primary to-purple-600 rounded-full"
-                    />
+                {/* Contribution stats */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="bg-secondary/50 p-4 rounded-lg">
+                    <p className="text-sm text-muted-foreground">Total</p>
+                    <p className="text-2xl font-bold">{githubData.contributions.total}</p>
+                  </div>
+                  <div className="bg-secondary/50 p-4 rounded-lg">
+                    <p className="text-sm text-muted-foreground">Code</p>
+                    <p className="text-2xl font-bold">{githubData.contributions.code}</p>
+                  </div>
+                  <div className="bg-secondary/50 p-4 rounded-lg">
+                    <p className="text-sm text-muted-foreground">Issues</p>
+                    <p className="text-2xl font-bold">{githubData.contributions.issues}</p>
+                  </div>
+                  <div className="bg-secondary/50 p-4 rounded-lg">
+                    <p className="text-sm text-muted-foreground">PRs</p>
+                    <p className="text-2xl font-bold">{githubData.contributions.prs}</p>
                   </div>
                 </div>
                 
-                <div className="bg-accent/5 backdrop-blur-sm rounded-xl p-6 border border-accent/10 hover:border-primary/20 transition-all duration-300 shadow-sm hover:shadow-md">
-                  <h3 className="text-lg font-medium mb-2 text-muted-foreground">Stars Received</h3>
-                  <p className="text-4xl font-bold text-primary">
-                    {githubData ? githubData.profile.totalStars : '0'}
-                  </p>
-                  <div className="mt-4 h-1 w-full bg-primary/10 rounded-full overflow-hidden">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      whileInView={{ width: "50%" }}
-                      viewport={{ once: true }}
-                      transition={{ delay: 0.7, duration: 1 }}
-                      className="h-full bg-gradient-to-r from-primary to-purple-600 rounded-full"
-                    />
-                  </div>
-                </div>
-              </motion.div>
-
-              {/* Contribution Calendar */}
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.4, duration: 0.6 }}
-                className="bg-accent/5 backdrop-blur-sm rounded-xl p-8 border border-accent/10 hover:border-primary/20 transition-all duration-300 shadow-sm hover:shadow-md mb-12 overflow-hidden relative"
-              >
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-                  <h3 className="text-xl font-bold">Contribution Calendar</h3>
-                  <span className="text-muted-foreground text-sm">
-                    {githubData ? `${formatNumber(githubData.contributionCalendar.totalContributions)} contributions in the last year` : '0 contributions'}
-                  </span>
-                </div>
-
-                <div className="mb-8">
-                  <div className="flex flex-col gap-2">
-                    {/* GitHub Calendar Header (Month names) */}
-                    {githubData && (
-                      <div className="flex pl-10 text-xs text-muted-foreground">
-                        {getCalendarMonths(githubData.contributionCalendar.days).map((month, i) => (
-                          <div 
-                            key={`month-${month.name}`} 
-                            className="flex-1"
-                            style={{
-                              marginLeft: i === 0 ? `${month.position * 12}px` : '0'
-                            }}
-                          >
-                            {month.name}
+                {/* Calendar visualization */}
+                <div className="mt-4 relative">
+                  <TooltipProvider>
+                    <div className="grid grid-cols-53 gap-1">
+                      {/* Month labels */}
+                      <div className="col-span-full grid grid-cols-53 mb-1">
+                        {Array.from({ length: 12 }).map((_, i) => {
+                          const month = new Date(selectedYear || new Date().getFullYear(), i, 1);
+                          // Position months approximately in the right columns
+                          const colStart = Math.floor((i * 53) / 12) + 1;
+                          const colEnd = Math.floor(((i + 1) * 53) / 12) + 1;
+                          const colSpan = colEnd - colStart;
+                          
+                          return (
+                            <div 
+                              key={i} 
+                              className="text-xs text-muted-foreground"
+                              style={{ 
+                                gridColumn: `${colStart} / span ${colSpan}`,
+                                textAlign: 'center'
+                              }}
+                            >
+                              {format(month, 'MMM')}
+                            </div>
+                          );
+                        })}
+                      </div>
+                      
+                      {/* Day of week labels */}
+                      <div className="col-span-1 grid grid-rows-7 gap-1 mr-2">
+                        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day, i) => (
+                          <div key={i} className="text-xs text-muted-foreground h-3 flex items-center">
+                            {i % 2 === 0 ? day : ''}
                           </div>
                         ))}
                       </div>
-                    )}
-                    
-                    {/* Calendar Grid */}
-                    <div className="flex">
-                      {/* Day Labels */}
-                      <div className="flex flex-col gap-[2px] mr-2 text-xs text-muted-foreground w-8">
-                        <div className="h-[10px]"></div>
-                        <div>Mon</div>
-                        <div className="h-[10px]"></div>
-                        <div>Wed</div>
-                        <div className="h-[10px]"></div>
-                        <div>Fri</div>
-                      </div>
                       
-                      {/* Calendar Squares */}
-                      <div className="w-full overflow-x-auto">
-                        {githubData ? (
-                          <div className="grid grid-flow-col gap-[2px]">
-                            {githubData.contributionCalendar.weeks.map((week, weekIndex) => (
-                              <div key={`week-${weekIndex}`} className="grid grid-flow-row gap-[2px]">
-                                {week.days.map((day, dayIndex) => (
-                                  <div
-                                    key={`day-${weekIndex}-${dayIndex}`}
-                                    className={`w-[10px] h-[10px] rounded-sm ${getContributionLevelClass(day.count)}`}
-                                    title={day.date ? `${day.count} contributions on ${new Date(day.date).toDateString()}` : ''}
-                                  />
-                                ))}
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          // Loading skeleton
-                          <div className="grid grid-flow-col gap-[2px]">
-                            {Array.from({ length: 53 }).map((_, weekIndex) => (
-                              <div key={`skeleton-week-${weekIndex}`} className="grid grid-flow-row gap-[2px]">
-                                {Array.from({ length: 7 }).map((_, dayIndex) => (
-                                  <div
-                                    key={`skeleton-day-${weekIndex}-${dayIndex}`}
-                                    className="w-[10px] h-[10px] rounded-sm bg-accent/10 animate-pulse"
-                                  />
-                                ))}
-                              </div>
-                            ))}
-                          </div>
+                      {/* Calendar cells */}
+                      <div className="col-span-52 grid grid-cols-52 grid-rows-7 gap-1">
+                        {githubData.contributionCalendar.weeks.flatMap((week, weekIndex) => 
+                          week.days.map((day, dayIndex) => (
+                            <Tooltip key={`${weekIndex}-${dayIndex}`}>
+                              <TooltipTrigger asChild>
+                                <div 
+                                  className={`h-3 w-3 rounded-sm ${getColorLevel(day.count)} cursor-pointer`}
+                                  style={{ 
+                                    gridColumn: weekIndex + 1,
+                                    gridRow: day.weekday + 1
+                                  }}
+                                />
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <div className="text-xs">
+                                  <p><b>{day.count} contributions</b></p>
+                                  <p>{format(new Date(day.date), 'MMM d, yyyy')}</p>
+                                </div>
+                              </TooltipContent>
+                            </Tooltip>
+                          ))
                         )}
                       </div>
                     </div>
-                    
-                    {/* Legend */}
-                    <div className="flex justify-end items-center gap-2 mt-2 text-xs text-muted-foreground">
-                      <span>Less</span>
-                      <div className="w-[10px] h-[10px] rounded-sm bg-[#161b22] border border-[#161b22]"></div>
-                      <div className="w-[10px] h-[10px] rounded-sm bg-[#0e4429] border border-[#0e4429]"></div>
-                      <div className="w-[10px] h-[10px] rounded-sm bg-[#006d32] border border-[#006d32]"></div>
-                      <div className="w-[10px] h-[10px] rounded-sm bg-[#26a641] border border-[#26a641]"></div>
-                      <div className="w-[10px] h-[10px] rounded-sm bg-[#39d353] border border-[#39d353]"></div>
-                      <span>More</span>
-                    </div>
+                  </TooltipProvider>
+                  
+                  {/* Color legend */}
+                  <div className="flex items-center gap-1 mt-4 justify-end">
+                    <span className="text-xs text-muted-foreground mr-1">Less</span>
+                    <div className={`h-3 w-3 rounded-sm bg-slate-100 dark:bg-slate-800`}></div>
+                    <div className={`h-3 w-3 rounded-sm bg-green-100 dark:bg-green-900`}></div>
+                    <div className={`h-3 w-3 rounded-sm bg-green-300 dark:bg-green-700`}></div>
+                    <div className={`h-3 w-3 rounded-sm bg-green-500 dark:bg-green-500`}></div>
+                    <div className={`h-3 w-3 rounded-sm bg-green-700 dark:bg-green-300`}></div>
+                    <span className="text-xs text-muted-foreground ml-1">More</span>
                   </div>
-                </div>
-              </motion.div>
-
-              {/* Activity overview with real repo data */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div>
-                  <h4 className="text-lg font-medium mb-4">Activity Overview</h4>
-                  <div className="space-y-3">
-                    {githubData && githubData.repositoryCommits && githubData.repositoryCommits.length > 0 ? (
-                      <>
-                        <div className="flex items-start gap-2">
-                          <FaGithub className="w-5 h-5 mt-0.5 text-muted-foreground" />
-                          <div>
-                            <p className="text-sm">
-                              Contributed to&nbsp;
-                              {githubData.repositoryCommits.slice(0, 3).map((repo, i) => (
-                                <span key={repo.name}>
-                                  {i > 0 && ', '}
-                                  <span className="text-primary">{repo.name}</span>
-                                </span>
-                              ))}
-                              {githubData.repositoryCommits.length > 3 && 
-                                `, and ${githubData.repositoryCommits.length - 3} other repositories`
-                              }
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <FaCode className="w-5 h-5 text-muted-foreground" />
-                          <p className="text-sm">
-                            Created {formatNumber(githubData.contributions.code)} commits in {githubData.repositoryCommits.length} repositories
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <FaGithub className="w-5 h-5 text-muted-foreground" />
-                          <p className="text-sm">Created {githubData.repos} repositories</p>
-                        </div>
-                      </>
-                    ) : (
-                      <p className="text-sm text-muted-foreground">No repository data available</p>
-                    )}
-                  </div>
-                </div>
-                
-                <div>
-                  <h4 className="text-lg font-medium mb-4">Contribution Types</h4>
-                  <div className="relative h-64 w-64 mx-auto">
-                    {githubData && (
-                      <svg viewBox="0 0 100 100" className="w-full h-full">
-                        {/* Calculate percentages based on real data */}
-                        {(() => {
-                          const total = githubData.contributions.total;
-                          const codePercent = total > 0 ? githubData.contributions.code / total : 0;
-                          const issuesPercent = total > 0 ? githubData.contributions.issues / total : 0;
-                          const prsPercent = total > 0 ? githubData.contributions.prs / total : 0;
-                          
-                          // Calculate offsets
-                          const dashArray = 251.2; // Circumference of circle with r=40
-                          const codeOffset = 0;
-                          const issuesOffset = -dashArray * codePercent;
-                          const prsOffset = -dashArray * (codePercent + issuesPercent);
-                          
-                          return (
-                            <>
-                              {/* Code contributions */}
-                              <motion.circle
-                                initial={{ pathLength: 0 }}
-                                whileInView={{ pathLength: codePercent }}
-                                viewport={{ once: true }}
-                                transition={{ delay: 0.8, duration: 1.5 }}
-                                cx="50" cy="50" r="40" 
-                                fill="none" 
-                                stroke="var(--primary)" 
-                                strokeWidth="12"
-                                strokeLinecap="round"
-                                strokeDasharray={dashArray}
-                                strokeDashoffset={codeOffset}
-                                transform="rotate(-90 50 50)"
-                              />
-                              
-                              {/* Issues */}
-                              <motion.circle
-                                initial={{ pathLength: 0 }}
-                                whileInView={{ pathLength: issuesPercent }}
-                                viewport={{ once: true }}
-                                transition={{ delay: 1, duration: 1.5 }}
-                                cx="50" cy="50" r="40" 
-                                fill="none" 
-                                stroke="purple" 
-                                strokeWidth="12"
-                                strokeLinecap="round"
-                                strokeDasharray={dashArray}
-                                strokeDashoffset={issuesOffset}
-                                transform="rotate(-90 50 50)"
-                              />
-                              
-                              {/* Pull requests */}
-                              <motion.circle
-                                initial={{ pathLength: 0 }}
-                                whileInView={{ pathLength: prsPercent }}
-                                viewport={{ once: true }}
-                                transition={{ delay: 1.2, duration: 1.5 }}
-                                cx="50" cy="50" r="40" 
-                                fill="none" 
-                                stroke="teal" 
-                                strokeWidth="12"
-                                strokeLinecap="round"
-                                strokeDasharray={dashArray}
-                                strokeDashoffset={prsOffset}
-                                transform="rotate(-90 50 50)"
-                              />
-                            </>
-                          );
-                        })()}
-                        
-                        <text x="50" y="45" textAnchor="middle" dominantBaseline="middle" className="text-2xl font-bold fill-current">
-                          {githubData ? formatNumber(githubData.contributions.total) : '0'}
-                        </text>
-                        <text x="50" y="60" textAnchor="middle" dominantBaseline="middle" className="text-xs fill-current text-muted-foreground">
-                          contributions
-                        </text>
-                      </svg>
-                    )}
-                    
-                    {/* Legend with real percentages */}
-                    <div className="absolute -bottom-8 left-0 right-0 flex justify-center gap-4 text-xs">
-                      <div className="flex items-center gap-1">
-                        <div className="w-3 h-3 rounded-full bg-primary"></div>
-                        <span>Code {githubData ? formatNumber(githubData.contributions.code) : '0'}</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <div className="w-3 h-3 rounded-full bg-purple-500"></div>
-                        <span>Issues {githubData ? formatNumber(githubData.contributions.issues) : '0'}</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <div className="w-3 h-3 rounded-full bg-teal-500"></div>
-                        <span>PRs {githubData ? formatNumber(githubData.contributions.prs) : '0'}</span>
-                      </div>
-                    </div>
-                  </div>
+                  
+                  <p className="text-xs text-muted-foreground mt-2 text-right">
+                    Last updated: {formatDistanceToNow(new Date(githubData.lastUpdated), { addSuffix: true })}
+                  </p>
                 </div>
               </div>
-
-              {/* Decorative elements */}
-              <div className="absolute -top-20 -right-20 w-40 h-40 bg-primary/5 rounded-full blur-3xl"></div>
-              <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-purple-500/5 rounded-full blur-3xl"></div>
-            </>
-          )}
+            </CardContent>
+          </Card>
         </motion.div>
       </div>
     </section>
@@ -984,7 +855,7 @@ export default function Home() {
               transition={{ delay: 0.5, duration: 0.5 }}
               className="text-xl md:text-2xl font-medium text-primary mt-2"
             >
-              <TypedText text="code-and-create-everywhere" />
+              <TypedText text="Coding Dreams Into Reality" />
             </motion.h3>
 
             {/* Navigation Pills */}
@@ -1259,7 +1130,7 @@ export default function Home() {
                 <motion.button
                   whileHover={{ scale: 1.05, y: -2 }}
                   whileTap={{ scale: 0.98 }}
-                  className="px-8 py-3 rounded-full bg-primary text-white hover:bg-primary/90 
+                  className="px-8 py-3 rounded-full bg-primary text-black hover:bg-primary/90 
                     transition-all duration-300 shadow-md hover:shadow-lg shadow-primary/10 
                     hover:shadow-primary/20 inline-flex items-center gap-2"
                 >
@@ -1272,7 +1143,7 @@ export default function Home() {
       </section>
 
       {/* Experience Section */}
-      <section id="experience" className="w-full py-20">
+      {/* <section id="experience" className="w-full py-20">
         <div className="container px-4">
           <motion.div
             initial={{ opacity: 0 }}
@@ -1309,7 +1180,7 @@ export default function Home() {
             </div>
           </motion.div>
         </div>
-      </section>
+      </section> */}
 
       {/* GitHub Activity Section */}
       <GitHubSection />
@@ -1398,8 +1269,8 @@ export default function Home() {
               <div className="mt-8 pt-8 border-t border-accent/10 grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
                 <div>
                   <h3 className="font-medium mb-1">Email</h3>
-                  <a href="mailto:contact@example.com" className="text-primary hover:underline">
-                    contact@example.com
+                  <a href="mailto:ronitk964@gmail.com" className="text-primary hover:underline">
+                    ronitk964@gmail.com
                   </a>
                 </div>
                 <div>

@@ -9,51 +9,44 @@ import { cn } from "@/lib/utils"
 
 const PROJECTS = [
   {
-    title: "GeneTrack AI",
+    title: "GeneTrust AI Studio",
     description: "A CRISPR intelligence platform using Next.js, TypeScript, and DNABERT model for complex genetic sequence analysis and ranking.",
-    image: "/images/projects/genetrust.png",
+    image: "/projects/genetrust.png",
     tags: ["Next.js", "TypeScript", "Express.js", "FastAPI", "PyTorch"],
-    github: "https://github.com/Ronit-Raj9/GeneTrack",
-    demo: "https://genetrust.vercel.app/",
-    category: "AI / Bioinformatics"
+    demoLink: "https://genetrust.vercel.app/",
+    codeLink: "https://github.com/Ronit-Raj9/hackhazard-project-genetrust",
+    type: "AI / Bioinformatics"
   },
   {
     title: "Ionia Testing Platform",
     description: "Comprehensive end-to-end JEE testing system with robust authentication, admin panel, and detailed performance analytics.",
-    image: "/images/projects/ionia.png",
+    image: "/projects/ionia.png",
     tags: ["Next.js", "JavaScript", "Express.js", "Cloudinary", "TailwindCSS"],
-    github: "https://github.com/Ronit-Raj9/Ionia",
-    demo: "https://www.ionia.sbs/",
-    category: "EdTech"
+    demoLink: "https://www.ionia.sbs/",
+    codeLink: "https://github.com/Ronit-Raj9/ionia-next",
+    type: "EdTech"
   },
+  
   {
-    title: "AI Text Summarizer",
-    description: "An application that automatically generates concise summaries from lengthy articles and documents using advanced NLP techniques.",
-    image: "/images/projects/summarizer.png",
-    tags: ["React", "Python", "TensorFlow", "NLP"],
-    github: "https://github.com/Ronit-Raj9/ai-summarizer",
-    demo: "https://summarizer.example.com",
-    category: "Machine Learning"
-  },
-  {
-    title: "GraphML Research Platform",
-    description: "Research platform focused on graph neural networks and their applications to scientific problems and social network analysis.",
-    image: "/images/projects/graphml.png",
-    tags: ["PyTorch", "Python", "Graph Neural Networks", "Data Visualization"],
-    github: "https://github.com/Ronit-Raj9/graph-research",
-    demo: "https://graphml.example.com",
-    category: "Research"
-  },
-  {
-    title: "E-Commerce Dashboard",
+    title: "E-Cell IIIT Gwalior",
     description: "Real-time analytics dashboard for e-commerce platforms with predictive inventory management and customer behavior insights.",
-    image: "/images/projects/dashboard.png",
+    image: "/projects/ecell.png",
     tags: ["Next.js", "MongoDB", "Chart.js", "Tailwind CSS"],
-    github: "https://github.com/Ronit-Raj9/ecommerce-analytics",
-    demo: "https://dashboard.example.com",
-    category: "Web Development"
+    demoLink: "https://ecell-puce.vercel.app/",
+    codeLink: "https://github.com/Ronit-Raj9/Ecell",
+    type: "Web Development"
   },
+  {
+    title: "Graph Neural Networks",
+    description: "",
+    image: "/projects/graphml.png",
+    tags: ["PyTorch", "Python", "Graph Neural Networks", "Data Visualization"],
+    demoLink: "https://graphml.example.com",
+    codeLink: "https://github.com/Ronit-Raj9/graph-research",
+    type: "Research"
+  }
 ]
+
 
 const categories = ["All", "Web Development", "AI / Bioinformatics", "Machine Learning", "Research", "EdTech"]
 
@@ -101,7 +94,7 @@ function ProjectCard({ project, index }: { project: typeof PROJECTS[0], index: n
           <span className="inline-flex items-center px-3 py-1.5 rounded-full bg-primary/10 
             text-primary text-xs font-medium tracking-wider"
           >
-            {project.category}
+            {project.type}
           </span>
         </motion.div>
         
@@ -166,7 +159,7 @@ function ProjectCard({ project, index }: { project: typeof PROJECTS[0], index: n
           className="flex gap-3 items-center mt-auto"
         >
           <motion.a
-            href={project.demo}
+            href={project.demoLink}
             target="_blank"
             rel="noopener noreferrer"
             whileHover={{ scale: 1.05, y: -2 }}
@@ -180,7 +173,7 @@ function ProjectCard({ project, index }: { project: typeof PROJECTS[0], index: n
           </motion.a>
           
           <motion.a
-            href={project.github}
+            href={project.codeLink}
             target="_blank"
             rel="noopener noreferrer"
             whileHover={{ scale: 1.05, rotate: 5 }}

@@ -1,14 +1,20 @@
 import { NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 
 const GITHUB_API_URL = 'https://api.github.com';
 const GITHUB_GRAPHQL_URL = 'https://api.github.com/graphql';
 const USERNAME = 'Ronit-Raj9';
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    // Get the year parameter from the request URL
+    const { searchParams } = new URL(request.url);
+    const year = searchParams.get('year');
+    
     // Use GitHub token for higher rate limits - required for GraphQL API
     const headers: HeadersInit = {
       'Accept': 'application/vnd.github+json',
+      'Cache-Control': 'no-cache',
     };
     
     if (process.env.GITHUB_TOKEN) {
@@ -24,18 +30,28 @@ export async function GET() {
     // Fetch basic user data
     const userResponse = await fetch(`${GITHUB_API_URL}/users/${USERNAME}`, { 
       headers,
-      next: { revalidate: 3600 } // Revalidate cache every hour
+      next: { revalidate: 60 } // Revalidate cache every minute for real-time data
     });
     
     if (!userResponse.ok) {
       throw new Error(`GitHub API responded with status: ${userResponse.status}`);
     }
     const userData = await userResponse.json();
+    
+    // Get account creation date to determine available years
+    const createdAt = new Date(userData.created_at);
+    const currentYear = new Date().getFullYear();
+    const startYear = createdAt.getFullYear();
+    const availableYears = [];
+    
+    for (let y = currentYear; y >= startYear; y--) {
+      availableYears.push(y);
+    }
 
     // Fetch repositories data 
     const reposResponse = await fetch(`${GITHUB_API_URL}/users/${USERNAME}/repos?per_page=100&sort=updated`, { 
       headers,
-      next: { revalidate: 3600 }
+      next: { revalidate: 60 } // Revalidate cache every minute
     });
     
     if (!reposResponse.ok) {
@@ -91,14 +107,18 @@ export async function GET() {
       }
     }
 
-    // Fetch contribution data using GitHub GraphQL API
-    // This will get the contribution calendar, commit counts, and contribution stats
+    // Determine the time range based on the requested year
+    const selectedYear = year ? parseInt(year) : currentYear;
+    const from = `${selectedYear}-01-01T00:00:00Z`;
+    const to = `${selectedYear}-12-31T23:59:59Z`;
+
+    // Fetch contribution data using GitHub GraphQL API with date filter
     const graphqlQuery = {
       query: `
         query {
           user(login: "${USERNAME}") {
             name
-            contributionsCollection {
+            contributionsCollection(from: "${from}", to: "${to}") {
               contributionCalendar {
                 totalContributions
                 weeks {
@@ -122,7 +142,7 @@ export async function GET() {
                 defaultBranchRef {
                   target {
                     ... on Commit {
-                      history {
+                      history(since: "${from}", until: "${to}") {
                         totalCount
                       }
                     }
@@ -142,7 +162,7 @@ export async function GET() {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(graphqlQuery),
-      next: { revalidate: 3600 }
+      next: { revalidate: 60 } // Revalidate cache every minute
     });
 
     if (!graphqlResponse.ok) {
@@ -201,6 +221,9 @@ export async function GET() {
            graphqlData.data.user.contributionsCollection.totalPullRequestReviewContributions
     };
 
+    // Revalidate path to ensure fresh data
+    revalidatePath('/');
+
     // Return combined data
     return NextResponse.json({
       profile: {
@@ -211,8 +234,11 @@ export async function GET() {
         publicRepos: userData.public_repos,
         totalStars,
         url: userData.html_url,
-        bio: userData.bio
+        bio: userData.bio,
+        createdAt: userData.created_at
       },
+      availableYears,
+      selectedYear,
       repos: reposData.length,
       topRepositories: topRepos,
       languages: languagePercentages,
@@ -225,6 +251,12 @@ export async function GET() {
       contributionsByMonth,
       repositoryCommits,
       lastUpdated: new Date().toISOString(),
+    }, {
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      }
     });
   } catch (error) {
     console.error('Error fetching GitHub data:', error);

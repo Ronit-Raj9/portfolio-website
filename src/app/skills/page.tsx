@@ -4,7 +4,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { SiTensorflow, SiPytorch, SiScikitlearn, SiNextdotjs, SiReact, 
   SiTypescript, SiNodedotjs, SiPython, SiTailwindcss, SiMongodb, 
-  SiPostgresql, SiDocker, SiGit, SiAmazonaws, SiFirebase, SiKeras, 
+  SiPostgresql, SiDocker, SiGit, SiAmazon, SiFirebase, SiKeras, 
   SiPandas, SiNumpy, SiJavascript, SiExpress, SiFastapi, SiDjango, 
   SiMysql, SiRedis, SiKubernetes } from "react-icons/si";
 import { TbBrandOpenai } from "react-icons/tb";
@@ -128,7 +128,7 @@ export default function Skills() {
         },
         {
           name: "AWS",
-          icon: <SiAmazonaws className="text-yellow-500" />,
+          icon: <SiAmazon className="text-yellow-500" />,
           description: "Comprehensive cloud computing platform",
           proficiency: "Advanced",
         },

@@ -1,195 +1,134 @@
 "use client"
 
-import { useState } from "react"
-import { FaGithub, FaLinkedin, FaTwitter, FaHeart } from "react-icons/fa"
-import { BsArrowRightShort } from "react-icons/bs"
+import { useState, useEffect } from "react"
+import { FaGithub, FaLinkedin, FaTwitter } from "react-icons/fa"
+import { SiKaggle } from "react-icons/si"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
 
-const SOCIAL_LINKS = [
-  {
-    name: "GitHub",
-    url: "https://github.com/Ronit-Raj9",
-    icon: FaGithub,
-  },
-  {
-    name: "LinkedIn",
-    url: "https://www.linkedin.com/in/ronit-raj-662485225/",
-    icon: FaLinkedin,
-  },
-  {
-    name: "Twitter",
-    url: "https://x.com/ronit__raj",
-    icon: FaTwitter,
-  },
-]
-
-const FOOTER_LINKS = [
-  {
-    title: "Sections",
-    links: [
-      { label: "Home", href: "/#" },
-      { label: "About", href: "/#about" },
-      { label: "Skills", href: "/#skills" },
-      { label: "Projects", href: "/#projects" },
-      { label: "Experience", href: "/#experience" },
-      { label: "Contact", href: "/#contact" },
-    ],
-  },
-  {
-    title: "Resources",
-    links: [
-      { label: "Blog", href: "/blog" },
-      { label: "Resume", href: "/resume.pdf" },
-      { label: "Publications", href: "/publications" },
-    ],
-  },
-]
-
 export default function Footer() {
-  const [email, setEmail] = useState("")
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isSubscribed, setIsSubscribed] = useState(false)
-
-  const handleSubscribe = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!email) return
-    
-    setIsSubmitting(true)
-    // Simulate API call
-    setTimeout(() => {
-      setIsSubmitting(false)
-      setIsSubscribed(true)
-      setEmail("")
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
+  const [currentTime, setCurrentTime] = useState(new Date())
+  
+  // Track mouse position for hover effects
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePosition({ x: e.clientX, y: e.clientY })
+    }
+    window.addEventListener('mousemove', handleMouseMove)
+    return () => window.removeEventListener('mousemove', handleMouseMove)
+  }, [])
+  
+  // Update time
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date())
     }, 1000)
-  }
+    return () => clearInterval(timer)
+  }, [])
 
+  // Random inspirational quotes for developers
+  const quotes = [
+    "Code is poetry written for machines and read by humans.",
+    "The best code is no code at all.",
+    "First solve the problem, then write the code.",
+    "Simplicity is the ultimate sophistication.",
+    "Make it work, make it right, make it fast."
+  ]
+  
+  const randomQuote = quotes[Math.floor(Math.random() * quotes.length)]
+  
   return (
-    <footer className="border-t bg-background">
-      <div className="container py-12 md:py-16">
-        <div className="grid grid-cols-1 gap-12 lg:grid-cols-3">
-          {/* About */}
-          <div className="space-y-6">
-            <div className="flex items-center">
-              <h3 className="text-2xl font-bold">Portfolio</h3>
+    <footer className="relative overflow-hidden border-t bg-background/80 backdrop-blur-sm">
+      {/* Decorative elements */}
+      <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:20px_20px]" />
+      <div className="absolute left-1/2 top-0 h-[1px] w-1/2 bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
+      
+      <div className="container relative z-10 py-12">
+        <div className="grid grid-cols-1 gap-y-12 md:grid-cols-3 md:gap-x-8">
+          
+          {/* Left column - Interactive time & location */}
+          <div className="flex flex-col items-center justify-center space-y-4 md:items-start">
+            <div className="relative flex h-24 w-24 items-center justify-center rounded-full bg-accent/5 p-2">
+              <div className="absolute inset-0 rounded-full bg-gradient-to-r from-primary/20 to-purple-600/20 blur-md" />
+              <div className="relative font-mono text-xs">
+                <div className="text-center font-bold">
+                  {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </div>
+                <div className="mt-1 text-center text-muted-foreground">
+                  Gwalior, IN
+                </div>
+              </div>
             </div>
-            
-            <p className="text-muted-foreground max-w-sm">
-              Building innovative AI solutions and web applications. Always exploring the frontier of technology and science.
+            <p className="text-sm text-muted-foreground">
+              Currently {new Date().getHours() >= 24 || new Date().getHours() < 6 
+                ? "sleeping 😴" 
+                : new Date().getHours() < 9 
+                  ? "having coffee ☕" 
+                  : "coding 💻"}
             </p>
-            
-            <div className="flex items-center gap-4">
-              {SOCIAL_LINKS.map((link) => (
-                <a
-                  key={link.name}
-                  href={link.url}
-                  target="_blank"
+          </div>
+          
+          {/* Middle column - Social links with hover animation */}
+          <div className="flex flex-col items-center justify-center">
+            <div className="flex space-x-1">
+              {[
+                { icon: FaGithub, url: "https://github.com/Ronit-Raj9", label: "GH" },
+                { icon: FaLinkedin, url: "https://www.linkedin.com/in/ronit-raj-662485225/", label: "LI" },
+                { icon: FaTwitter, url: "https://x.com/ronit__raj", label: "TW" },
+                { icon: SiKaggle, url: "https://www.kaggle.com/ronitraj1", label: "KG" }
+              ].map((social, i) => (
+                <a 
+                  key={social.label}
+                  href={social.url}
+                  target="_blank" 
                   rel="noopener noreferrer"
-                  className={cn(
-                    "rounded-full p-2 transition-colors",
-                    "hover:bg-accent hover:text-accent-foreground",
-                    "bg-accent/5"
-                  )}
+                  className="group relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-full"
                 >
-                  <link.icon className="h-5 w-5" />
-                  <span className="sr-only">{link.name}</span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-purple-600/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                  <div 
+                    className="absolute inset-0 bg-accent/5 transition-transform duration-300 group-hover:scale-0"
+                    style={{
+                      transformOrigin: `${mousePosition.x}px ${mousePosition.y}px`,
+                    }}
+                  />
+                  <social.icon className="relative z-10 h-5 w-5 text-foreground/80 transition-all duration-300 group-hover:scale-125 group-hover:text-primary" />
                 </a>
               ))}
             </div>
-          </div>
-
-          {/* Links */}
-          <div className="grid grid-cols-2 gap-8">
-            {FOOTER_LINKS.map((group) => (
-              <div key={group.title} className="space-y-4">
-                <h4 className="font-semibold">{group.title}</h4>
-                <ul className="space-y-2">
-                  {group.links.map((link) => (
-                    <li key={link.label}>
-                      <Link 
-                        href={link.href}
-                        className="text-muted-foreground hover:text-foreground transition-colors"
-                      >
-                        {link.label}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-
-          {/* Newsletter */}
-          <div className="space-y-6">
-            <h4 className="font-semibold">Stay Updated</h4>
-            <p className="text-muted-foreground">
-              Subscribe to receive updates on my latest projects and articles.
+            <p className="mt-6 max-w-xs text-center text-sm font-light italic text-muted-foreground">
+              "{randomQuote}"
             </p>
-
-            {isSubscribed ? (
-              <div className="bg-primary/10 text-primary rounded-lg p-4">
-                Thanks for subscribing! You'll receive updates soon.
-              </div>
-            ) : (
-              <form onSubmit={handleSubscribe} className="space-y-2">
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="your-email@example.com"
-                    className="flex-1 rounded-lg border border-accent/20 bg-accent/5 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-                    required
-                  />
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className={cn(
-                      "rounded-lg bg-primary text-primary-foreground p-2",
-                      "hover:bg-primary/90 transition-colors",
-                      "focus:outline-none focus:ring-2 focus:ring-primary/50",
-                      "disabled:opacity-50 disabled:cursor-not-allowed"
-                    )}
-                  >
-                    <BsArrowRightShort className="h-5 w-5" />
-                  </button>
-                </div>
-              </form>
-            )}
+          </div>
+          
+          {/* Right column - Creative contact & availability */}
+          <div className="flex flex-col items-center justify-center space-y-4 md:items-end">
+            <Link 
+              href="mailto:ronitk964@gmail.com"
+              className="group relative inline-flex items-center justify-center overflow-hidden rounded-full p-4 font-mono text-sm font-medium"
+            >
+              <span className="absolute h-0 w-0 rounded-full bg-primary opacity-10 transition-all duration-500 ease-out group-hover:h-56 group-hover:w-56"></span>
+              <span className="relative">ronitk964@gmail.com</span>
+            </Link>
             
-            <p className="text-sm text-muted-foreground">
-              I respect your privacy. Unsubscribe anytime.
-            </p>
+            <div className="flex items-center space-x-1">
+              <div className="h-2 w-2 rounded-full bg-green-500" />
+              <span className="text-xs text-muted-foreground">
+                Available for projects
+              </span>
+            </div>
           </div>
         </div>
         
-        <div className="mt-12 pt-6 border-t border-accent/10 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-sm text-muted-foreground">
-            &copy; {new Date().getFullYear()} Ronit Raj. All rights reserved.
-          </p>
-          
-          <p className="text-sm text-muted-foreground flex items-center gap-1">
-            Built with 
-            <FaHeart className="h-3 w-3 text-red-500" /> 
-            using
-            <a
-              href="https://nextjs.org"
-              target="_blank"
-              rel="noreferrer"
-              className="font-medium hover:underline underline-offset-4 mx-1"
-            >
-              Next.js
-            </a>
-            &
-            <a
-              href="https://tailwindcss.com"
-              target="_blank"
-              rel="noreferrer"
-              className="font-medium hover:underline underline-offset-4 ml-1"
-            >
-              Tailwind
-            </a>
-          </p>
+        <div className="mt-12 flex flex-col items-center justify-between space-y-4 border-t border-accent/10 pt-8 text-center md:flex-row md:text-left">
+          <div className="font-mono text-xs text-muted-foreground">
+            <span className="text-primary">&lt;</span> built with code <span className="text-primary">/&gt;</span>
+          </div>
+          <div className="flex items-center space-x-1 text-xs">
+            <div className="h-1 w-1 rounded-full bg-primary"></div>
+            <span>{new Date().getFullYear()}</span>
+            <div className="h-1 w-1 rounded-full bg-primary"></div>
+          </div>
         </div>
       </div>
     </footer>

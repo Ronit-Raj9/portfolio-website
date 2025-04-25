@@ -1,34 +1,19 @@
-import { type ClassValue, clsx } from "clsx"
+import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 
-/**
- * Combines class names with Tailwind CSS classes
- */
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
 /**
- * Format a date string to a readable format
+ * Get GitHub contribution level class based on count
  */
-export function formatDate(dateString: string | Date): string {
-  const date = typeof dateString === 'string' 
-    ? new Date(dateString) 
-    : dateString
-    
-  return new Intl.DateTimeFormat('en-US', {
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric'
-  }).format(date)
-}
-
-/**
- * Get short month name from date string
- */
-export function getShortMonth(dateString: string): string {
-  const date = new Date(dateString)
-  return date.toLocaleString('default', { month: 'short' })
+export function getContributionLevelClass(count: number): string {
+  if (count === 0) return "bg-[#161b22] border border-[#161b22] dark:bg-[#161b22]"
+  if (count <= 3) return "bg-[#0e4429] border border-[#0e4429] dark:bg-[#0e4429]"
+  if (count <= 6) return "bg-[#006d32] border border-[#006d32] dark:bg-[#006d32]"
+  if (count <= 9) return "bg-[#26a641] border border-[#26a641] dark:bg-[#26a641]"
+  return "bg-[#39d353] border border-[#39d353] dark:bg-[#39d353]"
 }
 
 /**
@@ -66,17 +51,6 @@ export function formatGitHubCalendarData(days: Array<{count: number; date: strin
 }
 
 /**
- * Get GitHub contribution level class based on count
- */
-export function getContributionLevelClass(count: number): string {
-  if (count === 0) return "bg-[#161b22] border border-[#161b22] dark:bg-[#161b22]"
-  if (count <= 3) return "bg-[#0e4429] border border-[#0e4429] dark:bg-[#0e4429]"
-  if (count <= 6) return "bg-[#006d32] border border-[#006d32] dark:bg-[#006d32]"
-  if (count <= 9) return "bg-[#26a641] border border-[#26a641] dark:bg-[#26a641]"
-  return "bg-[#39d353] border border-[#39d353] dark:bg-[#39d353]"
-}
-
-/**
  * Get months for GitHub contribution calendar
  * Returns an array of month names with their starting column position
  */
@@ -104,41 +78,3 @@ export function getCalendarMonths(days: Array<{count: number; date: string; week
   
   return months
 }
-
-/**
- * Smooth scroll to an element on the page
- */
-export function scrollToElement(elementId: string): void {
-  const element = document.getElementById(elementId)
-  if (element) {
-    const navbarOffset = 80 // Account for fixed navbar
-    const elementPosition = element.getBoundingClientRect().top + window.scrollY
-    
-    window.scrollTo({
-      top: elementPosition - navbarOffset,
-      behavior: 'smooth'
-    })
-  }
-}
-
-/**
- * Delay execution for a given amount of time
- */
-export function delay(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms))
-}
-
-/**
- * Truncate text to a specific length
- */
-export function truncateText(text: string, maxLength: number = 100): string {
-  if (text.length <= maxLength) return text
-  return text.slice(0, maxLength).trim() + '...'
-}
-
-/**
- * Generate a random ID
- */
-export function generateId(length: number = 8): string {
-  return Math.random().toString(36).substring(2, length + 2)
-} 
