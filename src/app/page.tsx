@@ -139,24 +139,40 @@ const EXPERIENCE = [
   {
     role: "Co-Founder & Lead Developer",
     company: "Garudex Labs",
-    period: "2022 - Present",
-    description: "Leading a team developing cutting-edge AI solutions for enterprise clients",
-    skills: ["Team Leadership", "Product Development", "Machine Learning", "Client Relations"]
-  },
-  {
-    role: "Research Intern",
-    company: "Google Summer of Code",
-    period: "2023",
-    description: "Contributed to open-source projects focused on scientific computing and machine learning",
-    skills: ["PyTorch", "Scientific Computing", "Open Source", "Research"]
-  },
-  {
-    role: "Teaching Assistant",
-    company: "IIIT Gwalior",
-    period: "2021 - 2022",
-    description: "Assisted students with advanced mathematics and computer science courses",
-    skills: ["Teaching", "Problem Solving", "Technical Communication"]
+    period: "January 2025 - Present",
+    description: "Leading the development of next-generation AI solutions for Entrepreneurs and founders, focused on innovation, scalability, and real-world impact.",
+    skills: [
+      "Team Leadership",
+      "Product Development",
+      "Machine Learning",
+      "Client Relations"
+    ]
   }
+  ,
+  {
+    role: "Freelance",
+    company: "Ionia",
+    period: "December 2024 - March 2025",
+    description: "Comprehensive end-to-end JEE testing system with robust authentication, admin panel, and detailed performance analytics.",
+    skills: ["Typescript", "Node.js", "Next.js", "Express.js", "MongoDB","Google Cloud Platform"]
+  },
+  {
+    role: "Winner - Smart India Hackathon 2024 (PS1604 RAG-MLLM)",
+    company: "IIIT Gwalior (Host Institute)",
+    period: "December 2024",
+    description: "Led Team BeGANs to victory in SIH 2024 with Project SHAKTI – an advanced multimodal LLM system for military tactical intelligence. Developed vision-language models with RAG and memory retrieval to enhance image conversational capabilities. Achieved 85% OCR accuracy on scanned documents. Project tagline: 'Pixels to Perfection'.",
+    skills: [
+      "Large Language Models (LLMs)",
+      "Vision-Language Modeling",
+      "Retrieval-Augmented Generation (RAG)",
+      "Multimodal AI",
+      "OCR Optimization",
+      "Model Deployment",
+      "Problem Solving",
+      "Technical Communication"
+    ]
+  }
+  
 ]
 
 const fadeIn = {
@@ -346,8 +362,8 @@ function ProjectCard({ project, index }: { project: typeof PROJECTS[0], index: n
             rel="noopener noreferrer"
             whileHover={{ scale: 1.03, y: -2 }}
             whileTap={{ scale: 0.98 }}
-            className="flex items-center gap-2 py-2.5 px-5 rounded-lg text-black font-medium 
-              bg-primary text-white hover:bg-primary/90 shadow-md hover:shadow-lg shadow-primary/5 
+            className="flex items-center gap-2 py-2.5 px-5 rounded-lg font-medium 
+              bg-primary text-primary-foreground hover:bg-primary/90 shadow-md hover:shadow-lg shadow-primary/5 
               hover:shadow-primary/10 transition-all duration-300"
           >
             Live Demo <BsArrowRight className="transition-transform duration-300 group-hover:translate-x-1" />
@@ -1130,7 +1146,7 @@ export default function Home() {
                 <motion.button
                   whileHover={{ scale: 1.05, y: -2 }}
                   whileTap={{ scale: 0.98 }}
-                  className="px-8 py-3 rounded-full bg-primary text-black hover:bg-primary/90 
+                  className="px-8 py-3 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 
                     transition-all duration-300 shadow-md hover:shadow-lg shadow-primary/10 
                     hover:shadow-primary/20 inline-flex items-center gap-2"
                 >
