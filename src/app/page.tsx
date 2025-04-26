@@ -201,7 +201,7 @@ function TypedText({ text }: { text: string }) {
     }
     
     // Start typing
-    typingTimer = setTimeout(typeNextChar, 1000)
+    typingTimer = setTimeout(typeNextChar, 300)
     
     // Cursor blink effect
     const cursorTimer = setInterval(() => {
@@ -215,7 +215,7 @@ function TypedText({ text }: { text: string }) {
   }, [text])
   
   return (
-    <span>
+    <span className="text-foreground">
       {displayedText}
       {showCursor && <span className="text-primary">|</span>}
     </span>
@@ -869,7 +869,7 @@ export default function Home() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5, duration: 0.5 }}
-              className="text-xl md:text-2xl font-medium text-primary mt-2"
+              className="text-xl md:text-2xl font-medium text-foreground mt-2"
             >
               <TypedText text="Coding Dreams Into Reality" />
             </motion.h3>

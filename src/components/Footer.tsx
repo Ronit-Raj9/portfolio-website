@@ -36,7 +36,14 @@ export default function Footer() {
     "Make it work, make it right, make it fast."
   ]
   
-  const randomQuote = quotes[Math.floor(Math.random() * quotes.length)]
+  // Use a more stable way to select a quote to prevent flickering
+  const [randomQuote, setRandomQuote] = useState("")
+  
+  useEffect(() => {
+    // Set the quote once on component mount
+    const quoteIndex = Math.floor(Math.random() * quotes.length)
+    setRandomQuote(quotes[quoteIndex])
+  }, [])
   
   return (
     <footer className="relative overflow-hidden border-t bg-background/80 backdrop-blur-sm">
@@ -85,14 +92,11 @@ export default function Footer() {
                   rel="noopener noreferrer"
                   className="group relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-full"
                 >
-                  <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-purple-600/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-purple-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
                   <div 
-                    className="absolute inset-0 bg-accent/5 transition-transform duration-300 group-hover:scale-0"
-                    style={{
-                      transformOrigin: `${mousePosition.x}px ${mousePosition.y}px`,
-                    }}
+                    className="absolute inset-0 bg-accent/5 group-hover:opacity-0 transition-opacity duration-200"
                   />
-                  <social.icon className="relative z-10 h-5 w-5 text-foreground/80 transition-all duration-300 group-hover:scale-125 group-hover:text-primary" />
+                  <social.icon className="relative z-10 h-5 w-5 text-foreground/80 group-hover:text-primary transition-colors duration-200" />
                 </a>
               ))}
             </div>
