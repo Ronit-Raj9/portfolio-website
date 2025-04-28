@@ -1159,7 +1159,7 @@ export default function Home() {
       </section>
 
       {/* Experience Section */}
-      {/* <section id="experience" className="w-full py-20">
+      <section id="experience" className="w-full py-20">
         <div className="container px-4">
           <motion.div
             initial={{ opacity: 0 }}
@@ -1191,12 +1191,12 @@ export default function Home() {
                 <p className="mt-2">
                   <span className="font-medium">IIIT Gwalior</span> · B.Tech. in Mathematics & Scientific Computing
                 </p>
-                <p className="text-sm text-muted-foreground">2020 - 2024</p>
+                <p className="text-sm text-muted-foreground">2023 - 2027</p>
               </motion.div>
             </div>
           </motion.div>
         </div>
-      </section> */}
+      </section>
 
       {/* GitHub Activity Section */}
       <GitHubSection />
