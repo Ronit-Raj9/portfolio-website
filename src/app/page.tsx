@@ -150,7 +150,7 @@ const EXPERIENCE = [
   }
   ,
   {
-    role: "Freelance",
+    role: "Full Stack Developer",
     company: "Ionia",
     period: "December 2024 - March 2025",
     description: "Comprehensive end-to-end JEE testing system with robust authentication, admin panel, and detailed performance analytics.",

@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useTheme } from 'next-themes'
 import { RiMoonFill, RiSunLine } from 'react-icons/ri'
 import { FaGithub, FaLinkedin, FaTwitter } from 'react-icons/fa'
-import { SiKaggle } from 'react-icons/si'
+import { SiKaggle, SiDevpost} from 'react-icons/si'
 import { cn } from '@/lib/utils'
 
 const SOCIAL_LINKS = [
@@ -29,6 +29,11 @@ const SOCIAL_LINKS = [
     url: "https://www.kaggle.com/ronitraj1",
     icon: SiKaggle,
   },
+  {
+    name: "Devfolio",
+    url: "https://devfolio.co/@ronit_raj",
+    icon: SiDevpost,
+  }
 ]
 
 export default function Navbar() {
