@@ -187,37 +187,129 @@ function TypedText({ text }: { text: string }) {
   const [showCursor, setShowCursor] = useState(true)
   
   useEffect(() => {
+    // Reset state when text changes
+    setDisplayedText('')
+    setIsTyping(true)
+    setShowCursor(true)
+    
     let currentIndex = 0
-    let typingTimer: NodeJS.Timeout
+    let typingTimer: NodeJS.Timeout | null = null
+    let cursorTimer: NodeJS.Timeout | null = null
     
     const typeNextChar = () => {
       if (currentIndex < text.length) {
         setDisplayedText(text.substring(0, currentIndex + 1))
         currentIndex++
-        typingTimer = setTimeout(typeNextChar, 100)
+        // Vary typing speed slightly for more natural effect
+        const typingSpeed = Math.random() * 40 + 60 // 60-100ms
+        typingTimer = setTimeout(typeNextChar, typingSpeed)
       } else {
         setIsTyping(false)
+        // Keep cursor visible for a moment after typing is complete
+        setTimeout(() => {
+          setShowCursor(false)
+        }, 1500)
       }
     }
     
-    // Start typing
-    typingTimer = setTimeout(typeNextChar, 300)
+    // Start typing after a short delay
+    typingTimer = setTimeout(typeNextChar, 800)
     
-    // Cursor blink effect
-    const cursorTimer = setInterval(() => {
-      setShowCursor(prev => !prev)
+    // Cursor blink effect - only while typing
+    cursorTimer = setInterval(() => {
+      if (isTyping) {
+        setShowCursor(prev => !prev)
+      }
     }, 500)
     
     return () => {
-      clearTimeout(typingTimer)
-      clearInterval(cursorTimer)
+      if (typingTimer) clearTimeout(typingTimer)
+      if (cursorTimer) clearInterval(cursorTimer)
     }
-  }, [text])
+  }, [text, isTyping])
   
   return (
     <span className="text-foreground">
       {displayedText}
-      {showCursor && <span className="text-primary">|</span>}
+      {showCursor && (
+        <motion.span 
+          className="text-primary font-bold"
+          animate={{ opacity: [1, 0, 1] }}
+          transition={{ duration: 0.6, repeat: Infinity }}
+        >
+          |
+        </motion.span>
+      )}
+    </span>
+  )
+}
+
+function TypingEffect() {
+  const phrases = [
+    "Coding Dreams Into Reality",
+    "Building AI Solutions",
+    "Creating Digital Experiences",
+    "Solving Complex Problems"
+  ]
+  
+  const [currentPhraseIndex, setCurrentPhraseIndex] = useState(0)
+  const [displayedText, setDisplayedText] = useState('')
+  const [currentCharIndex, setCurrentCharIndex] = useState(0)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [showCursor, setShowCursor] = useState(true)
+  
+  useEffect(() => {
+    const currentPhrase = phrases[currentPhraseIndex]
+    
+    if (!isDeleting) {
+      // Typing phase
+      if (currentCharIndex < currentPhrase.length) {
+        const timeout = setTimeout(() => {
+          setDisplayedText(currentPhrase.slice(0, currentCharIndex + 1))
+          setCurrentCharIndex(currentCharIndex + 1)
+        }, 100)
+        return () => clearTimeout(timeout)
+      } else {
+        // Finished typing, wait then start deleting
+        const timeout = setTimeout(() => {
+          setIsDeleting(true)
+        }, 2000)
+        return () => clearTimeout(timeout)
+      }
+    } else {
+      // Deleting phase
+      if (displayedText.length > 0) {
+        const timeout = setTimeout(() => {
+          setDisplayedText(displayedText.slice(0, -1))
+        }, 50)
+        return () => clearTimeout(timeout)
+      } else {
+        // Finished deleting, move to next phrase
+        setIsDeleting(false)
+        setCurrentCharIndex(0)
+        setCurrentPhraseIndex((prev) => (prev + 1) % phrases.length)
+      }
+    }
+  }, [currentCharIndex, displayedText, isDeleting, currentPhraseIndex, phrases])
+  
+  // Cursor blink effect
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setShowCursor(prev => !prev)
+    }, 500)
+    return () => clearInterval(interval)
+  }, [])
+  
+  return (
+    <span className="text-foreground">
+      {displayedText}
+      <motion.span 
+        className="text-primary font-bold"
+        animate={{ opacity: [1, 0, 1] }}
+        transition={{ duration: 0.6, repeat: Infinity }}
+      >
+        |
+      </motion.span>
     </span>
   )
 }
@@ -869,9 +961,9 @@ export default function Home() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5, duration: 0.5 }}
-              className="text-xl md:text-2xl font-medium text-foreground mt-2"
+              className="text-xl md:text-2xl font-medium text-foreground mt-2 min-h-[2rem] flex items-center justify-center"
             >
-              <TypedText text="Coding Dreams Into Reality" />
+              <TypingEffect />
             </motion.h3>
 
             {/* Navigation Pills */}
@@ -894,7 +986,7 @@ export default function Home() {
             </motion.div>
 
             {/* Social Links */}
-            <motion.div 
+            {/* <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.9, duration: 0.5 }}
@@ -919,7 +1011,7 @@ export default function Home() {
                   )}
                 </a>
               ))}
-            </motion.div>
+            </motion.div> */}
           </motion.div>
         </div>
 
