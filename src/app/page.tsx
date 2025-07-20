@@ -117,7 +117,7 @@ const PROJECTS = [
   
   {
     title: "E-Cell IIIT Gwalior",
-    description: "Real-time analytics dashboard for e-commerce platforms with predictive inventory management and customer behavior insights.",
+    description: "Comprehensive website for IIIT Gwalior's Entrepreneurship Cell featuring startup events, mentorship programs, innovation challenges, and resources for budding entrepreneurs.",
     image: "/projects/ecell.png",
     tags: ["Next.js", "MongoDB", "Chart.js", "Tailwind CSS"],
     demoLink: "https://ecell-puce.vercel.app/",
