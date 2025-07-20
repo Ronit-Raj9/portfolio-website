@@ -96,6 +96,16 @@ const SKILLS = [
 ]
 
 const PROJECTS = [
+  
+  {
+    title: "LegalEase",
+    description: "AI-powered legal compliance platform for Indian startups featuring automated contract generation, GST management, blockchain notarization, and specialized AI agents for legal workflows.",
+    image: "/projects/legalease.png",
+    tags: ["Browser Automation","AI Agents","Next.js", "FastAPI", "Blockchain", "MongoDB", "AI"],
+    demoLink: "https://legalease-new.vercel.app/",
+    codeLink: "",
+    type: "Legal Tech"
+  },
   {
     title: "GeneTrust AI Studio",
     description: "A CRISPR intelligence platform using Next.js, TypeScript, and DNABERT model for complex genetic sequence analysis and ranking.",
@@ -124,6 +134,8 @@ const PROJECTS = [
     codeLink: "https://github.com/Ronit-Raj9/Ecell",
     type: "Web Development"
   },
+  // codeLink: "https://github.com/Ronit-Raj9/legalease",
+
   {
     title: "Graph Neural Networks",
     description: "",
